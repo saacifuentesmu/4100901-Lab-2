@@ -58,6 +58,7 @@ static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
+void low_power_sleep_mode(void);
 
 /* USER CODE END PFP */
 
@@ -148,6 +149,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+#define LOW_POWER_MODE 0 // 0: Normal, 1: Low Power Mode
+#if LOW_POWER_MODE
+    low_power_sleep_mode();
+#endif
   }
   /* USER CODE END 3 */
 }
@@ -326,6 +331,37 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void low_power_sleep_mode(void)
+{
+#define AWAKE_TIME (5 * 1000) // 5 segundos
+	static uint32_t sleep_tick = AWAKE_TIME;
+
+	if (sleep_tick > HAL_GetTick()) {
+		return;
+	}
+	printf("Sleeping\r\n");
+	sleep_tick = HAL_GetTick() + AWAKE_TIME;
+
+	RCC->AHB1SMENR  = 0x0;
+	RCC->AHB2SMENR  = 0x0;
+	RCC->AHB3SMENR  = 0x0;
+
+	RCC->APB1SMENR1 = 0x0;
+	RCC->APB1SMENR2 = 0x0;
+	RCC->APB2SMENR  = 0x0;
+
+	/*Suspend Tick increment to prevent wakeup by Systick interrupt.
+	Otherwise the Systick interrupt will wake up the device within 1ms (HAL time base)*/
+	HAL_SuspendTick();
+
+	/* Enter Sleep Mode , wake up is done once User push-button is pressed */
+	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+
+	/* Resume Tick interrupt if disabled prior to SLEEP mode entry */
+	HAL_ResumeTick();
+
+	printf("Awake\r\n");
+}
 
 /* USER CODE END 4 */
 
