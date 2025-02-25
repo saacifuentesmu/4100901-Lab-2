@@ -47,6 +47,7 @@ I2C_HandleTypeDef hi2c1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+uint8_t button_pressed = 0;
 
 /* USER CODE END PV */
 
@@ -61,6 +62,12 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if (GPIO_Pin == B1_Pin) {
+		button_pressed = 1;
+	}
+}
 
 /* USER CODE END 0 */
 
@@ -104,11 +111,21 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  ssd1306_SetCursor(20, 20);
-  ssd1306_WriteString("Hello World!", Font_7x10, White);
+  uint8_t press_count = 0;
+  char str[2] = {press_count + '0', 0};
+
+  ssd1306_SetCursor(50, 30);
+  ssd1306_WriteString(str, Font_11x18, White);
   ssd1306_UpdateScreen();
-  while (1)
-  {
+  while (1) {
+    if (button_pressed != 0) {
+      press_count = (press_count + 1) % 10;
+      button_pressed = 0;
+      
+      ssd1306_SetCursor(50, 30);
+      ssd1306_WriteString(str, Font_7x10, White);
+      ssd1306_UpdateScreen();
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -280,6 +297,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
