@@ -21,6 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 #include "ssd1306.h"
 #include "ssd1306_fonts.h"
 
@@ -62,6 +63,13 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+int _write(int file, char *ptr, int len)
+{
+  (void)file;
+  HAL_UART_Transmit(&huart2, (uint8_t *)ptr, len, 10);
+  return len;
+}
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if (GPIO_Pin == B1_Pin) {
@@ -69,6 +77,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	}
 }
 
+void hearbeat(void)
+{
+	static uint32_t tick = 0;
+	if (tick < HAL_GetTick()) {
+		tick = HAL_GetTick() + 500;
+		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -117,14 +133,17 @@ int main(void)
   ssd1306_SetCursor(50, 30);
   ssd1306_WriteString(str, Font_11x18, White);
   ssd1306_UpdateScreen();
+  printf("Press count: %d\n", press_count);
   while (1) {
+    hearbeat();
     if (button_pressed != 0) {
       press_count = (press_count + 1) % 10;
       button_pressed = 0;
-      
+
       ssd1306_SetCursor(50, 30);
       ssd1306_WriteString(str, Font_7x10, White);
       ssd1306_UpdateScreen();
+      printf("Press count: %d\n", press_count);
     }
     /* USER CODE END WHILE */
 
