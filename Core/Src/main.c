@@ -139,10 +139,11 @@ int main(void)
     hearbeat();
     if (button_pressed != 0) {
       press_count = (press_count + 1) % 10;
+      str[0] = press_count + '0';
       button_pressed = 0;
 
       ssd1306_SetCursor(50, 30);
-      ssd1306_WriteString(str, Font_7x10, White);
+      ssd1306_WriteString(str, Font_11x18, White);
       ssd1306_UpdateScreen();
       printf("Press count: %d\n", press_count);
     }
