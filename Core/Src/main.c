@@ -21,6 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "ssd1306.h"
+#include "ssd1306_fonts.h"
 
 /* USER CODE END Includes */
 
@@ -94,11 +96,17 @@ int main(void)
   MX_I2C1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  ssd1306_Init();
+  ssd1306_Fill(Black);
+  ssd1306_UpdateScreen();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  ssd1306_SetCursor(20, 20);
+  ssd1306_WriteString("Hello World!", Font_7x10, White);
+  ssd1306_UpdateScreen();
   while (1)
   {
     /* USER CODE END WHILE */
